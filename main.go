@@ -23,7 +23,7 @@ func main() {
 		Plugins:  registry.GetPluginsAll(),
 	}
 
-	llmPlugin, err := registry.GetByName("OpenAI")
+	llmPlugin, err := registry.GetFactoryByName("OpenAI")
 	if err != nil {
 		fmt.Println(err)
 		return

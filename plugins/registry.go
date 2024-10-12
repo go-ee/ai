@@ -15,10 +15,10 @@ func GetDefaultPluginRegistry() *PluginRegistry {
 		defaultRegistry = NewPluginRegistry()
 
 		//registering LLM plugins
-		defaultRegistry.AddPlugin(openai.NewFactory())
+		defaultRegistry.AddPluginFactory(openai.NewFactory())
 
 		//registering Tools plugins
-		defaultRegistry.AddPlugin(youtube.NewFactory())
+		defaultRegistry.AddPluginFactory(youtube.NewFactory())
 	}
 	return defaultRegistry
 }
@@ -32,8 +32,8 @@ type PluginRegistry struct {
 	factories *orderedmap.OrderedMap
 }
 
-// AddPlugin Add a plugin to the registry
-func (pr *PluginRegistry) AddPlugin(plugin api.PluginFactory) {
+// AddPluginFactory Add a plugin to the registry
+func (pr *PluginRegistry) AddPluginFactory(plugin api.PluginFactory) {
 	pr.factories.Set(plugin.GetName(), plugin)
 }
 
@@ -41,7 +41,7 @@ func (pr *PluginRegistry) PrintPlugins() (ret int) {
 	counter := 1
 	lastType := api.PluginTypeMeta
 	for _, name := range pr.factories.Keys() {
-		plugin := pr.getByKey(name)
+		plugin := pr.getFactoryByKey(name)
 		if plugin.GetType() != lastType {
 			fmt.Printf("\n\n%v Plugins:\n\n", plugin.GetType())
 			lastType = plugin.GetType()
@@ -58,11 +58,11 @@ func (pr *PluginRegistry) GetPluginByIndex(index int) (ret api.PluginFactory, er
 		err = fmt.Errorf("there is no plugin with the index %v", index)
 		return
 	}
-	ret = pr.getByKey(names[index-1])
+	ret = pr.getFactoryByKey(names[index-1])
 	return
 }
 
-func (pr *PluginRegistry) GetByName(name interface{}) (ret api.PluginFactory, err error) {
+func (pr *PluginRegistry) GetFactoryByName(name interface{}) (ret api.PluginFactory, err error) {
 	if plugin, ok := pr.factories.Get(name); ok {
 		ret = plugin.(api.PluginFactory)
 	} else {
@@ -73,13 +73,13 @@ func (pr *PluginRegistry) GetByName(name interface{}) (ret api.PluginFactory, er
 
 func (pr *PluginRegistry) GetPluginsAll() (ret []api.Plugin) {
 	for _, name := range pr.factories.Keys() {
-		plugin := pr.getByKey(name)
+		plugin := pr.getFactoryByKey(name)
 		ret = append(ret, plugin)
 	}
 	return
 }
 
-func (pr *PluginRegistry) getByKey(name interface{}) api.PluginFactory {
+func (pr *PluginRegistry) getFactoryByKey(name interface{}) api.PluginFactory {
 	plugin, _ := pr.factories.Get(name)
 	return plugin.(api.PluginFactory)
 }
